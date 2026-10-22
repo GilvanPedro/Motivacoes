@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0b0b10" />
+    <meta name="robots" content="noindex" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Gerenciar vídeos</title>
+  </head>
+  <body>
+    <main class="admin">
+      <header class="admin-header">
+        <a class="back" href="/">← Voltar</a>
+        <h1>Gerenciar vídeos</h1>
+        <button id="logout" class="btn ghost small" type="button" hidden>Sair</button>
+      </header>
+
+      <section id="login-section" class="card" hidden>
+        <form id="login-form" class="stack">
+          <label>
+            Senha de administrador
+            <input id="password" type="password" autocomplete="current-password" required />
+          </label>
+          <button class="btn primary" type="submit">Entrar</button>
+          <p id="login-error" class="message error" role="alert"></p>
+        </form>
+      </section>
+
+      <div id="app" class="stack-lg" hidden>
+        <section class="card">
+          <h2>Adicionar vídeo</h2>
+          <div class="tabs" role="tablist">
+            <button type="button" class="tab active" data-mode="YOUTUBE" role="tab" aria-selected="true">Link do YouTube</button>
+            <button type="button" class="tab" data-mode="UPLOAD" role="tab" aria-selected="false" id="upload-tab">Enviar arquivo</button>
+          </div>
+          <form id="video-form" class="stack">
+            <label id="url-field">
+              Link do YouTube
+              <input id="video-url" type="url" inputmode="url" placeholder="https://youtube.com/watch?v=…" />
+            </label>
+            <label id="file-field" hidden>
+              Arquivo de vídeo
+              <input id="video-file" type="file" accept="video/*" />
+            </label>
+            <p id="upload-disabled" class="hint" hidden>
+              O envio de arquivos ainda não foi configurado no servidor (veja o README, seção Cloudflare R2).
+            </p>
+            <label>
+              Título <span class="optional">(opcional)</span>
+              <input id="video-title" maxlength="200" placeholder="Pega do YouTube automaticamente" />
+            </label>
+            <fieldset>
+              <legend>Tags</legend>
+              <div id="video-tags" class="chips"></div>
+              <div class="inline-form">
+                <input id="tag-name" maxlength="50" placeholder="Nova tag (ex: workout)" aria-label="Nome da nova tag" />
+                <button id="tag-create" class="btn ghost" type="button">Criar tag</button>
+              </div>
+            </fieldset>
+            <progress id="upload-progress" max="100" value="0" hidden></progress>
+            <button id="video-submit" class="btn primary" type="submit">Adicionar vídeo</button>
+            <p id="video-message" class="message" role="status"></p>
+          </form>
+        </section>
+
+        <section class="card">
+          <div class="row">
+            <h2>Vídeos</h2>
+            <select id="filter" aria-label="Filtrar por tag">
+              <option value="">Todas as tags</option>
+            </select>
+          </div>
+          <ul id="video-list" class="video-list"></ul>
+        </section>
+
+        <section class="card">
+          <h2>Tags</h2>
+          <p class="hint">Apagar uma tag não apaga os vídeos, só tira a tag deles.</p>
+          <div id="tag-list" class="chips"></div>
+        </section>
+      </div>
+    </main>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module" src="/src/admin.ts"></script>
+  </body>
+</html>
