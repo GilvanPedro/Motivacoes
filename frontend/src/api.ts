@@ -31,26 +31,49 @@ export interface CreateVideo {
 
 // Vazio = mesma origem (proxy da Vercel / Vite). Defina VITE_API_URL para apontar direto pro backend.
 const BASE = ((import.meta.env.VITE_API_URL as string | undefined) ?? '').replace(/\/$/, '');
-const PASSWORD_KEY = 'motivacional.admin';
+export interface Session {
+  token: string;
+  expiresAt: string;
+}
 
+const SESSION_KEY = 'motivacoes.session';
+let memorySession: Session | null = null; // fallback se o localStorage estiver bloqueado
+
+try {
+  localStorage.removeItem('motivacional.admin'); // versão antiga guardava a senha em texto
+} catch {
+  /* ignore */
+}
+
+/** Sessão de admin salva no navegador; dura até o servidor dizer que expirou (6 meses). */
 export const auth = {
   get(): string | null {
+    let session = memorySession;
     try {
-      return localStorage.getItem(PASSWORD_KEY);
+      const raw = localStorage.getItem(SESSION_KEY);
+      if (raw) session = JSON.parse(raw) as Session;
     } catch {
+      /* ignore */
+    }
+    if (!session) return null;
+    if (Date.parse(session.expiresAt) <= Date.now()) {
+      auth.clear();
       return null;
     }
+    return session.token;
   },
-  set(password: string) {
+  set(session: Session) {
+    memorySession = session;
     try {
-      localStorage.setItem(PASSWORD_KEY, password);
+      localStorage.setItem(SESSION_KEY, JSON.stringify(session));
     } catch {
-      /* navegação privada: só fica na sessão atual */
+      /* navegação privada: só fica nesta aba */
     }
   },
   clear() {
+    memorySession = null;
     try {
-      localStorage.removeItem(PASSWORD_KEY);
+      localStorage.removeItem(SESSION_KEY);
     } catch {
       /* ignore */
     }
@@ -69,8 +92,8 @@ export class ApiError extends Error {
 async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers = new Headers(init.headers);
   if (init.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
-  const password = auth.get();
-  if (password && !headers.has('X-Admin-Password')) headers.set('X-Admin-Password', password);
+  const token = auth.get();
+  if (token) headers.set('Authorization', `Bearer ${token}`);
 
   let res: Response;
   try {
@@ -109,8 +132,8 @@ export const api = {
     request<Video>(`/api/videos/${id}`, { method: 'PUT', body: json(body) }),
   deleteVideo: (id: number) => request<void>(`/api/videos/${id}`, { method: 'DELETE' }),
 
-  checkPassword: (password: string) =>
-    request<void>('/api/auth/check', { method: 'POST', headers: { 'X-Admin-Password': password } }),
+  login: (password: string) => request<Session>('/api/auth/login', { method: 'POST', body: json({ password }) }),
+  checkSession: () => request<void>('/api/auth/check', { method: 'POST' }),
   presignUpload: (fileName: string, contentType: string) =>
     request<{ uploadUrl: string; key: string }>('/api/uploads/presign', {
       method: 'POST',

@@ -1,8 +1,6 @@
 package com.motivacional.config;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -12,33 +10,35 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 /**
- * Leitura é pública; qualquer alteração (POST/PUT/DELETE) exige o header X-Admin-Password.
+ * Leitura é pública; qualquer alteração (POST/PUT/DELETE) exige "Authorization: Bearer <token>",
+ * obtido em POST /api/auth/login.
  */
 @Component
 public class AdminInterceptor implements HandlerInterceptor {
 
-    public static final String HEADER = "X-Admin-Password";
+    public static final String LOGIN_PATH = "/api/auth/login";
 
-    private final byte[] expected;
+    private final AdminTokens tokens;
 
-    public AdminInterceptor(AppProperties props) {
-        String pw = props.adminPassword();
-        this.expected = pw == null || pw.isBlank() ? null : pw.getBytes(StandardCharsets.UTF_8);
+    public AdminInterceptor(AdminTokens tokens) {
+        this.tokens = tokens;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws IOException {
         String method = request.getMethod();
-        if ("GET".equals(method) || "HEAD".equals(method) || "OPTIONS".equals(method)) {
+        if ("GET".equals(method) || "HEAD".equals(method) || "OPTIONS".equals(method)
+                || LOGIN_PATH.equals(request.getRequestURI())) {
             return true;
         }
-        if (expected == null) {
+        if (!tokens.configured()) {
             return reject(response, 503, "ADMIN_PASSWORD não está configurada no servidor.");
         }
-        String given = request.getHeader(HEADER);
-        if (given == null || !MessageDigest.isEqual(expected, given.getBytes(StandardCharsets.UTF_8))) {
-            return reject(response, 401, "Senha de administrador inválida.");
+        String header = request.getHeader("Authorization");
+        String token = header != null && header.startsWith("Bearer ") ? header.substring(7).trim() : null;
+        if (!tokens.verify(token)) {
+            return reject(response, 401, "Sessão expirada. Entre novamente.");
         }
         return true;
     }

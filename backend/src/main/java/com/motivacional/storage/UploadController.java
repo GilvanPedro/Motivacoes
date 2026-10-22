@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -35,12 +34,6 @@ public class UploadController {
     @GetMapping("/api/health")
     public Map<String, String> health() {
         return Map.of("status", "ok");
-    }
-
-    /** Só serve pra validar a senha: o AdminInterceptor já barrou se estiver errada. */
-    @PostMapping("/api/auth/check")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void checkPassword() {
     }
 
     @PostMapping("/api/uploads/presign")

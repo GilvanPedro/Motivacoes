@@ -117,10 +117,14 @@ O repositório tem um `render.yaml`, então o Render já sabe como subir o backe
 
 ## API
 
-Leitura é pública; `POST`/`PUT`/`DELETE` exigem o header `X-Admin-Password`.
+Leitura é pública; `POST`/`PUT`/`DELETE` exigem `Authorization: Bearer <token>`. O token vem do
+login, vale **6 meses** e fica salvo no navegador (sobrevive a fechar o navegador e desligar o PC).
+Trocar a `ADMIN_PASSWORD` no servidor desloga todo mundo na hora.
 
 | Método | Rota | Descrição |
 |---|---|---|
+| POST | `/api/auth/login` | `{ "password": "..." }` → `{ token, expiresAt }` |
+| POST | `/api/auth/check` | 204 se a sessão ainda vale |
 | GET | `/api/tags` | Tags com quantidade de vídeos |
 | POST | `/api/tags` | `{ "name": "workout" }` |
 | DELETE | `/api/tags/{id}` | Apaga a tag (os vídeos ficam) |

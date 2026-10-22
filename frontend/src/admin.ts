@@ -99,10 +99,8 @@ function showLogin(message = '') {
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   loginError.textContent = '';
-  const password = passwordInput.value;
   try {
-    await api.checkPassword(password);
-    auth.set(password);
+    auth.set(await api.login(passwordInput.value));
     passwordInput.value = '';
     await start();
   } catch (err) {
@@ -397,9 +395,8 @@ async function start() {
   await refresh();
 }
 
-const saved = auth.get();
-if (saved) {
-  api.checkPassword(saved).then(
+if (auth.get()) {
+  api.checkSession().then(
     () => start(),
     (e) => {
       if (e instanceof ApiError && e.status === 401) auth.clear();
