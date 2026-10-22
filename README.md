@@ -96,11 +96,13 @@ Primeiro suba o projeto pro GitHub (o Render e a Vercel puxam de lá).
 
 ### Backend no Render
 
-1. <https://render.com> → **New → Web Service** → conecte o repositório.
-2. **Root Directory:** `backend` · **Runtime:** Docker · **Instance:** Free.
-3. **Environment:** adicione `DATABASE_URL`, `ADMIN_PASSWORD` e, se for usar upload, as `STORAGE_*`.
-4. **Health Check Path:** `/api/health`.
-5. Depois do deploy, anote a URL (ex.: `https://motivacional-api.onrender.com`).
+O repositório tem um `render.yaml`, então o Render já sabe como subir o backend.
+
+1. <https://render.com> → **New → Blueprint** → conecte o repositório.
+2. O Render lê o `render.yaml` e pede só dois valores: `DATABASE_URL` (a string do Neon inteira)
+   e `ADMIN_PASSWORD`. Preencha e clique em **Apply**.
+3. Se for usar upload, depois adicione as `STORAGE_*` em **Environment** no painel do serviço.
+4. Depois do deploy, anote a URL (ex.: `https://motivacoes-api.onrender.com`).
 
 > O plano grátis do Render "dorme" depois de 15 min sem uso; o primeiro acesso depois disso demora
 > uns 30–60 s (o site mostra "Acordando o servidor…"). Para evitar, dá pra usar um serviço como o

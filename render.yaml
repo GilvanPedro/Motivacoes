@@ -1,0 +1,20 @@
+# Blueprint do Render: Dashboard > New > Blueprint > escolha este repositório.
+services:
+  - type: web
+    name: motivacoes-api
+    runtime: docker
+    plan: free
+    # mesma região do Neon padrão (AWS us-east-2 / Ohio), pra deixar o banco mais rápido
+    region: ohio
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      # o Render pede esses valores na hora de criar o serviço
+      - key: DATABASE_URL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Para ativar o envio de arquivos (Cloudflare R2), adicione depois no painel:
+      # STORAGE_ENDPOINT, STORAGE_BUCKET, STORAGE_ACCESS_KEY, STORAGE_SECRET_KEY, STORAGE_PUBLIC_URL
